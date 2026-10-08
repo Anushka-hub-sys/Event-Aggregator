@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Aggregator</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div>
+        <h1>⚡ Event Aggregator</h1>
+        <p class="tagline">Hackathons, GDG events, coding contests &amp; Unstop challenges — in one place.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="scrapeBtn" class="btn btn-primary">🔄 Scrape now</button>
+        <button id="demoBtn" class="btn btn-ghost">✨ Demo new event</button>
+        <button id="addBtn" class="btn btn-ghost">＋ Add event</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats" id="stats">
+      <div class="stat-card"><span class="stat-value" id="statTotal">–</span><span class="stat-label">Total events</span></div>
+      <div class="stat-card"><span class="stat-value" id="statUpcoming">–</span><span class="stat-label">Upcoming</span></div>
+      <div class="stat-card"><span class="stat-value" id="statHackathons">–</span><span class="stat-label">Hackathons</span></div>
+      <div class="stat-card"><span class="stat-value" id="statSources">–</span><span class="stat-label">Sources</span></div>
+    </section>
+
+    <section class="filters">
+      <input type="search" id="searchInput" placeholder="Search events, organizers..." />
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+        <option value="hackathon">Hackathon</option>
+        <option value="coding">Coding</option>
+        <option value="workshop">Workshop</option>
+        <option value="webinar">Webinar</option>
+        <option value="meetup">Meetup</option>
+        <option value="conference">Conference</option>
+        <option value="gdg">GDG</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="modeFilter">
+        <option value="">Any mode</option>
+        <option value="online">Online</option>
+        <option value="offline">Offline</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
+      <select id="sortFilter">
+        <option value="recent">Newest first</option>
+        <option value="deadline">Deadline soonest</option>
+        <option value="title">Title A–Z</option>
+      </select>
+      <label class="checkbox">
+        <input type="checkbox" id="upcomingFilter" /> Upcoming only
+      </label>
+    </section>
+
+    <section id="eventsGrid" class="grid"></section>
+    <p id="emptyState" class="empty hidden">No events match your filters yet. Try “Scrape now”.</p>
+  </main>
+
+  <!-- Add-event modal -->
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal">
+      <h2>Add an event</h2>
+      <form id="eventForm">
+        <label>Title *<input type="text" name="title" required minlength="3" /></label>
+        <label>URL *<input type="url" name="url" required placeholder="https://..." /></label>
+        <label>Description<textarea name="description" rows="3"></textarea></label>
+        <div class="row">
+          <label>Category
+            <select name="category">
+              <option value="hackathon">Hackathon</option>
+              <option value="coding">Coding</option>
+              <option value="workshop">Workshop</option>
+              <option value="webinar">Webinar</option>
+              <option value="meetup">Meetup</option>
+              <option value="conference">Conference</option>
+              <option value="gdg">GDG</option>
+              <option value="other" selected>Other</option>
+            </select>
+          </label>
+          <label>Mode
+            <select name="mode">
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>Organizer<input type="text" name="organizer" /></label>
+          <label>Location<input type="text" name="location" /></label>
+        </div>
+        <div class="row">
+          <label>Starts on<input type="date" name="starts_at" /></label>
+          <label>Deadline<input type="date" name="deadline" /></label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

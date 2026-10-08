@@ -1,0 +1,268 @@
+const API = "/api";
+
+const state = {
+  q: "",
+  category: "",
+  mode: "",
+  sort: "recent",
+  upcoming: false,
+  loading: false,
+};
+
+const el = {
+  grid: document.getElementById("eventsGrid"),
+  empty: document.getElementById("emptyState"),
+  search: document.getElementById("searchInput"),
+  category: document.getElementById("categoryFilter"),
+  mode: document.getElementById("modeFilter"),
+  sort: document.getElementById("sortFilter"),
+  upcoming: document.getElementById("upcomingFilter"),
+  scrapeBtn: document.getElementById("scrapeBtn"),
+  demoBtn: document.getElementById("demoBtn"),
+  addBtn: document.getElementById("addBtn"),
+  modal: document.getElementById("modalBackdrop"),
+  form: document.getElementById("eventForm"),
+  cancelBtn: document.getElementById("cancelBtn"),
+  toast: document.getElementById("toast"),
+};
+
+/* ------------------------------------------------------------------ */
+/* Utilities                                                           */
+/* ------------------------------------------------------------------ */
+function toast(message, type = "") {
+  el.toast.textContent = message;
+  el.toast.className = `toast ${type}`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.toast.classList.add("hidden"), 3800);
+}
+
+// Backend stores naive UTC datetimes; append "Z" if there is no offset.
+function parseDate(value) {
+  if (!value) return null;
+  const hasZone = /Z$|[+-]\d{2}:?\d{2}$/.test(value);
+  const date = new Date(hasZone ? value : `${value}Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(value) {
+  const date = parseDate(value);
+  if (!date) return "—";
+  return date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function deadlineLabel(value) {
+  const date = parseDate(value);
+  if (!date) return { text: "No deadline", cls: "" };
+  const days = Math.ceil((date - new Date()) / 86_400_000);
+  if (days < 0) return { text: "Closed", cls: "urgent" };
+  if (days === 0) return { text: "Closes today", cls: "urgent" };
+  if (days <= 3) return { text: `${days} day${days > 1 ? "s" : ""} left`, cls: "urgent" };
+  return { text: `${days} days left`, cls: "ok" };
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
+}
+
+/* ------------------------------------------------------------------ */
+/* API calls                                                           */
+/* ------------------------------------------------------------------ */
+async function apiFetch(path, options = {}) {
+  const response = await fetch(`${API}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw new Error(data?.detail || `Request failed (${response.status})`);
+  }
+  return data;
+}
+
+async function loadStats() {
+  try {
+    const stats = await apiFetch("/stats");
+    document.getElementById("statTotal").textContent = stats.total_events;
+    document.getElementById("statUpcoming").textContent = stats.upcoming_events;
+    document.getElementById("statHackathons").textContent = stats.by_category.hackathon || 0;
+    document.getElementById("statSources").textContent = Object.keys(stats.by_source).length;
+  } catch (error) {
+    console.error("Stats failed:", error);
+  }
+}
+
+async function loadEvents() {
+  if (state.loading) return;
+  state.loading = true;
+  el.grid.innerHTML = `<p class="empty">Loading events…</p>`;
+
+  const params = new URLSearchParams();
+  if (state.q) params.set("q", state.q);
+  if (state.category) params.set("category", state.category);
+  if (state.mode) params.set("mode", state.mode);
+  if (state.upcoming) params.set("upcoming_only", "true");
+  params.set("sort", state.sort);
+  params.set("limit", "60");
+
+  try {
+    const data = await apiFetch(`/events?${params.toString()}`);
+    renderEvents(data.items);
+  } catch (error) {
+    el.grid.innerHTML = "";
+    el.empty.classList.remove("hidden");
+    el.empty.textContent = `Could not load events: ${error.message}`;
+    toast(error.message, "error");
+  } finally {
+    state.loading = false;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Rendering                                                           */
+/* ------------------------------------------------------------------ */
+function renderEvents(events) {
+  if (!events.length) {
+    el.grid.innerHTML = "";
+    el.empty.classList.remove("hidden");
+    return;
+  }
+  el.empty.classList.add("hidden");
+
+  el.grid.innerHTML = events
+    .map((event) => {
+      const deadline = deadlineLabel(event.deadline);
+      return `
+        <article class="card">
+          <div class="card-head">
+            <h3><a href="${escapeHtml(event.url)}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(event.title)}
+            </a></h3>
+          </div>
+
+          <div class="meta">
+            <span class="pill">${escapeHtml(event.category)}</span>
+            <span class="pill">${escapeHtml(event.mode)}</span>
+            <span class="pill source">${escapeHtml(event.source)}</span>
+          </div>
+
+          <p class="desc">${escapeHtml((event.description || "No description provided.").slice(0, 180))}</p>
+
+          <div class="meta">
+            ${event.organizer ? `<span>🏢 ${escapeHtml(event.organizer)}</span>` : ""}
+            ${event.location ? `<span>📍 ${escapeHtml(event.location)}</span>` : ""}
+          </div>
+
+          <div class="card-foot">
+            <span>🗓 ${formatDate(event.starts_at)}</span>
+            <span class="${deadline.cls}">${deadline.text}</span>
+          </div>
+        </article>`;
+    })
+    .join("");
+}
+
+/* ------------------------------------------------------------------ */
+/* Actions                                                             */
+/* ------------------------------------------------------------------ */
+async function handleScrape(simulateNew) {
+  const button = simulateNew ? el.demoBtn : el.scrapeBtn;
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "⏳ Working…";
+
+  try {
+    const result = await apiFetch(`/scrape?simulate_new=${simulateNew}&notify=true`, {
+      method: "POST",
+    });
+
+    if (result.events_added === 0) {
+      toast(`No new events. ${result.events_skipped} already known.`);
+    } else {
+      toast(
+        `Added ${result.events_added} new event(s) • ${result.notifications_sent} Discord ping(s)`,
+        "success"
+      );
+    }
+    if (result.errors.length) console.warn("Scraper errors:", result.errors);
+
+    await Promise.all([loadEvents(), loadStats()]);
+  } catch (error) {
+    toast(error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+async function handleSubmit(formEvent) {
+  formEvent.preventDefault();
+  const formData = new FormData(el.form);
+  const payload = Object.fromEntries(formData.entries());
+
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === "") delete payload[key];
+  });
+
+  // <input type="date"> gives "YYYY-MM-DD" — expand to full ISO datetime.
+  ["starts_at", "deadline"].forEach((key) => {
+    if (payload[key]) payload[key] = `${payload[key]}T23:59:00`;
+  });
+
+  if (!payload.url || !payload.title) {
+    toast("Title and URL are required.", "error");
+    return;
+  }
+
+  try {
+    await apiFetch("/events", { method: "POST", body: JSON.stringify(payload) });
+    toast("Event added — Discord notified!", "success");
+    closeModal();
+    el.form.reset();
+    await Promise.all([loadEvents(), loadStats()]);
+  } catch (error) {
+    toast(error.message, "error");
+  }
+}
+
+function openModal() {
+  el.modal.classList.remove("hidden");
+}
+
+function closeModal() {
+  el.modal.classList.add("hidden");
+}
+
+/* ------------------------------------------------------------------ */
+/* Event wiring (debounced search)                                     */
+/* ------------------------------------------------------------------ */
+let searchTimer;
+el.search.addEventListener("input", (event) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.q = event.target.value.trim();
+    loadEvents();
+  }, 320);
+});
+
+el.category.addEventListener("change", (e) => { state.category = e.target.value; loadEvents(); });
+el.mode.addEventListener("change", (e) => { state.mode = e.target.value; loadEvents(); });
+el.sort.addEventListener("change", (e) => { state.sort = e.target.value; loadEvents(); });
+el.upcoming.addEventListener("change", (e) => { state.upcoming = e.target.checked; loadEvents(); });
+
+el.scrapeBtn.addEventListener("click", () => handleScrape(false));
+el.demoBtn.addEventListener("click", () => handleScrape(true));
+el.addBtn.addEventListener("click", openModal);
+el.cancelBtn.addEventListener("click", closeModal);
+el.modal.addEventListener("click", (e) => { if (e.target === el.modal) closeModal(); });
+el.form.addEventListener("submit", handleSubmit);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+/* ------------------------------------------------------------------ */
+/* Boot                                                                */
+/* ------------------------------------------------------------------ */
+(async function init() {
+  await Promise.all([loadEvents(), loadStats()]);
+})();
