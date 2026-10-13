@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SOH (Student Opportunity Hub) - 1:1 Pixel-Perfect Dark Cyber Theme
+   EVENT AGGREGATOR - 1:1 Pixel-Perfect Dark Cyber Theme
    ========================================================================== */
 
 :root {
@@ -684,6 +684,7 @@ body {
   .hero-wrapper { grid-template-columns: 1fr; gap: 32px; }
   .auth-grid { grid-template-columns: 1fr; }
   .nav-menu { display: none; }
+}  
 @media (max-width: 620px) {
   .hero-inner { flex-direction: column; align-items: flex-start; }
   .filters { flex-direction: column; align-items: stretch; }
