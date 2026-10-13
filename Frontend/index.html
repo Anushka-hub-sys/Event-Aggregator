@@ -3,35 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event Aggregator</title>
+  <title>Event Aggregator - Student Opportunity Hub</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header class="hero">
-    <div class="hero-inner">
-      <div>
-        <h1>⚡ Event Aggregator</h1>
-        <p class="tagline">Hackathons, GDG events, coding contests &amp; Unstop challenges — in one place.</p>
-      </div>
-      <div class="hero-actions">
-        <button id="scrapeBtn" class="btn btn-primary">🔄 Scrape now</button>
-        <button id="demoBtn" class="btn btn-ghost">✨ Demo new event</button>
-        <button id="addBtn" class="btn btn-ghost">＋ Add event</button>
 
-        <!-- Dynamic Auth Box -->
-        <div id="authContainer" style="display: inline-flex; align-items: center; margin-left: 0.5rem;">
-          <!-- Default: Login Button -->
-          <a href="/login.html" id="loginBtn" class="btn btn-ghost" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
-            👤 <span>Login</span>
-          </a>
+  <!-- Sticky Navbar (Matching SOH) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">EVENT AGGREGATOR</a>
 
-          <!-- Logged In Profile Box -->
-          <div id="userProfileBox" style="display: none; align-items: center; gap: 0.6rem;">
-            <div style="background: rgba(99, 102, 241, 0.15); border: 1px solid #6366f1; color: #a5b4fc; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.45rem;">
-              <span style="display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%;"></span>
-              <span id="userEmailBadge">Logged in</span>
+      <nav class="nav-menu">
+        <a href="/" class="nav-item active">Events</a>
+        <a href="#momentum" class="nav-item">Trending</a>
+        <a href="javascript:void(0)" id="addNavBtn" class="nav-item">Add Event</a>
+        <a href="/login.html" class="nav-item">Login</a>
+      </nav>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div id="authContainer">
+          <a href="/login.html" id="loginBtn" class="btn-white-pill">Login</a>
+
+          <div id="userProfileBox" style="display: none; align-items: center; gap: 10px;">
+            <div style="background: rgba(45, 212, 191, 0.12); border: 1px solid rgba(45, 212, 191, 0.35); color: var(--teal-accent); padding: 5px 14px; border-radius: 9999px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span>
+              <span id="userEmailBadge">User</span>
             </div>
-            <button onclick="handleLogout()" class="btn btn-ghost" style="color: #f87171; border-color: #3f3f46; padding: 0.45rem 0.75rem;">
+            <button onclick="handleLogout()" class="btn-ghost-pill" style="padding: 6px 14px; font-size: 0.8rem; color: #f87171;">
               Logout
             </button>
           </div>
@@ -40,15 +38,98 @@
     </div>
   </header>
 
-  <main class="container">
-    <section class="stats" id="stats">
-      <div class="stat-card"><span class="stat-value" id="statTotal">–</span><span class="stat-label">Total events</span></div>
-      <div class="stat-card"><span class="stat-value" id="statUpcoming">–</span><span class="stat-label">Upcoming</span></div>
-      <div class="stat-card"><span class="stat-value" id="statHackathons">–</span><span class="stat-label">Hackathons</span></div>
-      <div class="stat-card"><span class="stat-value" id="statSources">–</span><span class="stat-label">Sources</span></div>
-    </section>
+  <!-- Hero Section -->
+  <section class="hero-wrapper">
+    <div>
+      <div class="soh-badge">✨ STUDENT OPPORTUNITY HUB</div>
+      <h1 class="hero-title">
+        Discover the right events, hackathons, and challenges before everyone else.
+      </h1>
+      <p class="hero-desc">
+        A dark, minimal opportunity layer for ambitious builders. Track trending hackathons, GDG meetups, coding contests, and verified tech challenges in one unified interface.
+      </p>
 
+      <div class="hero-actions">
+        <button id="scrapeBtn" class="btn-white-pill">
+          Explore events &rarr;
+        </button>
+        <button id="addBtn" class="btn-ghost-pill">
+          + Submit opportunity
+        </button>
+        <button id="demoBtn" class="btn-ghost-pill" style="opacity: 0.7;">
+          ✨ Demo event
+        </button>
+      </div>
+
+      <!-- Live Dynamic Stats -->
+      <section class="stats" id="stats">
+        <div class="stat-card">
+          <span class="stat-value" id="statTotal">–</span>
+          <span class="stat-label">Events tracked</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="statUpcoming">–</span>
+          <span class="stat-label">Upcoming active</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="statHackathons">–</span>
+          <span class="stat-label">Hackathons</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="statSources">–</span>
+          <span class="stat-label">Verified sources</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Trending Box -->
+    <div>
+      <div class="trending-engine-card">
+        <div class="trending-header">
+          <span>Trending Engine</span>
+          <span style="font-size: 0.9rem;">📈</span>
+        </div>
+
+        <div class="trending-item">
+          <div class="trending-item-meta">
+            <span>Rank 01</span>
+            <span style="color: var(--teal-accent);">31 Upvotes</span>
+          </div>
+          <div class="trending-item-title">SDE Placement Masterclass</div>
+          <div class="trending-item-sub">Remote &bull; Placement &bull; Coding</div>
+        </div>
+
+        <div class="trending-item">
+          <div class="trending-item-meta">
+            <span>Rank 02</span>
+            <span style="color: var(--teal-accent);">24 Upvotes</span>
+          </div>
+          <div class="trending-item-title">National AI Buildathon</div>
+          <div class="trending-item-sub">Bengaluru &bull; Hackathon &bull; AI/ML</div>
+        </div>
+
+        <div class="trending-item" style="margin-bottom: 0;">
+          <div class="trending-item-meta">
+            <span>Rank 03</span>
+            <span style="color: var(--teal-accent);">19 Upvotes</span>
+          </div>
+          <div class="trending-item-title">Google Developer Groups Live</div>
+          <div class="trending-item-sub">Online &bull; GDG Meetup &bull; Cloud</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feed Section -->
+  <main class="container" id="momentum">
+    <div class="section-label">Trending Events</div>
+    <div class="section-title-bar">
+      <h2 class="section-heading">Momentum-ranked opportunities</h2>
+    </div>
+
+    <!-- Filters Bar -->
     <section class="filters">
+      <input type="search" id="searchInput" placeholder="Search events, organizers, tags..." />
       <input type="search" id="searchInput" placeholder="Search events, organizers..." />
       <input type="date" id="dateFilter" title="Find events active on this date" />
       <select id="categoryFilter">
@@ -57,8 +138,6 @@
         <option value="coding">Coding</option>
         <option value="workshop">Workshop</option>
         <option value="webinar">Webinar</option>
-        <option value="meetup">Meetup</option>
-        <option value="conference">Conference</option>
         <option value="gdg">GDG</option>
         <option value="other">Other</option>
       </select>
@@ -83,18 +162,19 @@
     </section>
     </section>
 
+    <!-- Cards Grid -->
     <section id="eventsGrid" class="grid"></section>
-    <p id="emptyState" class="empty hidden">No events match your filters yet. Try “Scrape now”.</p>
+    <p id="emptyState" class="empty hidden">No events match your filters yet. Try “Explore events”.</p>
   </main>
 
-  <!-- Add-event modal -->
+  <!-- Add Event Modal -->
   <div class="modal-backdrop hidden" id="modalBackdrop">
     <div class="modal">
-      <h2>Add an event</h2>
+      <h2>Submit Opportunity</h2>
       <form id="eventForm">
-        <label>Title *<input type="text" name="title" required minlength="3" /></label>
-        <label>URL *<input type="url" name="url" required placeholder="https://..." /></label>
-        <label>Description<textarea name="description" rows="3"></textarea></label>
+        <label>Title *<input type="text" name="title" required minlength="3" placeholder="e.g. Smart India Hackathon" /></label>
+        <label>Official URL *<input type="url" name="url" required placeholder="https://..." /></label>
+        <label>Description<textarea name="description" rows="3" placeholder="Summary of the event..."></textarea></label>
         <div class="row">
           <label>Category
             <select name="category">
@@ -102,8 +182,6 @@
               <option value="coding">Coding</option>
               <option value="workshop">Workshop</option>
               <option value="webinar">Webinar</option>
-              <option value="meetup">Meetup</option>
-              <option value="conference">Conference</option>
               <option value="gdg">GDG</option>
               <option value="other" selected>Other</option>
             </select>
@@ -117,39 +195,50 @@
           </label>
         </div>
         <div class="row">
-          <label>Organizer<input type="text" name="organizer" /></label>
-          <label>Location<input type="text" name="location" /></label>
+          <label>Organizer<input type="text" name="organizer" placeholder="e.g. Google Developers" /></label>
+          <label>Location<input type="text" name="location" placeholder="Remote / Bengaluru" /></label>
         </div>
         <div class="row">
           <label>Starts on<input type="date" name="starts_at" /></label>
           <label>Deadline<input type="date" name="deadline" /></label>
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save event</button>
+          <button type="button" class="btn-ghost-pill" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn-white-pill">Save Opportunity</button>
         </div>
       </form>
     </div>
   </div>
-  <!-- Delete Confirmation Box -->
+
+  <!-- Delete Confirmation Modal (Expected by app.js) -->
   <div class="modal-backdrop hidden" id="deleteModalBackdrop">
-    <div class="modal" style="max-width: 400px; text-align: center;">
-      <h2 style="margin-bottom: 10px;">Delete Event</h2>
-      <p style="margin-bottom: 24px; color: var(--muted); font-size: 0.95rem;">Are you sure you want to delete this event? This action cannot be undone.</p>
-      <div class="modal-actions" style="justify-content: center; gap: 16px;">
-        <button type="button" class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
-        <button type="button" class="btn" style="background: #ef4444; color: white; border: none;" id="confirmDeleteBtn">Yes, Delete</button>
+    <div class="modal" style="max-width: 420px; text-align: center;">
+      <h2 style="font-size: 1.2rem; margin-bottom: 8px;">Delete Event?</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 22px;">
+        Are you sure you want to delete this event? This action cannot be undone.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <button type="button" class="btn-ghost-pill" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn-white-pill" id="confirmDeleteBtn" style="background: #ef4444; color: #fff;">Delete</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 
-  <!-- Main Application Script -->
+  <!-- Main Backend Script -->
   <script src="./app.js"></script>
 
-  <!-- Auth State & User Activity Script -->
+  <!-- Auth State Sync -->
   <script>
+    const addNavBtn = document.getElementById("addNavBtn");
+    if (addNavBtn) {
+      addNavBtn.addEventListener("click", () => {
+        const addBtn = document.getElementById("addBtn");
+        if (addBtn) addBtn.click();
+      });
+    }
+
     function getActiveUser() {
       try {
         const raw = localStorage.getItem("user");
@@ -168,8 +257,8 @@
       if (user && user.isLoggedIn) {
         if (loginBtn) loginBtn.style.display = "none";
         if (userProfileBox) userProfileBox.style.display = "inline-flex";
-        const displayName = user.email ? user.email.split("@")[0] : "User";
-        if (userEmailBadge) userEmailBadge.textContent = "Hi, " + displayName;
+        const displayName = user.name || (user.email ? user.email.split("@")[0] : "User");
+        if (userEmailBadge) userEmailBadge.textContent = displayName;
       } else {
         if (loginBtn) loginBtn.style.display = "inline-flex";
         if (userProfileBox) userProfileBox.style.display = "none";
