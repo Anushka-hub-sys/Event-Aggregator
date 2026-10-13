@@ -36,7 +36,7 @@ class Settings:
     ]
 
     SEED_ON_STARTUP: bool = _as_bool(os.getenv("SEED_ON_STARTUP"), True)
-    ENABLE_LIVE_SCRAPERS: bool = _as_bool(os.getenv("ENABLE_LIVE_SCRAPERS"), False)
+    ENABLE_LIVE_SCRAPERS: bool = _as_bool(os.getenv("ENABLE_LIVE_SCRAPERS"), True)
 
 
 settings = Settings()

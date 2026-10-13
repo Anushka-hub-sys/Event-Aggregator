@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Aggregator - Login</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        .auth-container {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .auth-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-header h1 {
+            font-size: 1.5rem;
+            color: #f3f4f6;
+            margin: 0.5rem 0 0.25rem;
+        }
+        .auth-header p {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: #d1d5db;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #f9fafb;
+            font-size: 0.95rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            border-color: #6366f1;
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #4f46e5;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+        .auth-btn:hover {
+            background: #4338ca;
+        }
+        .auth-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        .auth-footer a {
+            color: #818cf8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        .auth-alert {
+            display: none;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+        }
+        .auth-alert.error {
+            background: #451a1a;
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+            display: block;
+        }
+        .auth-alert.success {
+            background: #064e3b;
+            color: #6ee7b7;
+            border: 1px solid #065f46;
+            display: block;
+        }
+    </style>
+</head>
+<body style="background: #0b0f19; margin: 0; font-family: system-ui, -apple-system, sans-serif;">
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>⚡ Event Aggregator</h1>
+                <p id="authSubtitle">Sign in to your account</p>
+            </div>
+
+            <div id="alertBox" class="auth-alert"></div>
+
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" class="form-input" placeholder="dev@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="submitBtn" class="auth-btn">Sign In</button>
+            </form>
+
+            <div class="auth-footer">
+                <span id="switchPrompt">Don't have an account?</span>
+                <a href="#" id="switchLink" onclick="toggleMode(event)">Sign Up</a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="/" style="color: #6b7280; font-size: 0.8rem; text-decoration: none;">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLoginMode = true;
+
+        function showAlert(msg, type = "error") {
+            const box = document.getElementById("alertBox");
+            box.className = `auth-alert ${type}`;
+            box.textContent = msg;
+        }
+
+        function toggleMode(e) {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById("alertBox").className = "auth-alert";
+            
+            const subtitle = document.getElementById("authSubtitle");
+            const submitBtn = document.getElementById("submitBtn");
+            const prompt = document.getElementById("switchPrompt");
+            const link = document.getElementById("switchLink");
+
+            if (isLoginMode) {
+                subtitle.textContent = "Sign in to your account";
+                submitBtn.textContent = "Sign In";
+                prompt.textContent = "Don't have an account?";
+                link.textContent = "Sign Up";
+            } else {
+                subtitle.textContent = "Create a new developer account";
+                submitBtn.textContent = "Create Account";
+                prompt.textContent = "Already have an account?";
+                link.textContent = "Sign In";
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim().toLowerCase();
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                showAlert("Please enter both email and password.");
+                return;
+            }
+
+            // Retrieve registered users registry
+            let users = JSON.parse(localStorage.getItem("app_users") || "{}");
+
+            if (isLoginMode) {
+                // Login Verification
+                if (!users[email]) {
+                    // Agar pehle se registered nahi hai, toh auto-register kar dete hain taaki demo me fail na ho
+                    users[email] = password;
+                    localStorage.setItem("app_users", JSON.stringify(users));
+                } else if (users[email] !== password) {
+                    showAlert("Galat password hai! Sahi password enter karo.");
+                    return;
+                }
+
+                localStorage.setItem("user", JSON.stringify({
+                    email: email,
+                    isLoggedIn: true,
+                    loginTime: new Date().toISOString()
+                }));
+
+                showAlert("Login Successful! Redirecting...", "success");
+                setTimeout(() => { window.location.href = "/"; }, 600);
+
+            } else {
+                // Sign Up Mode
+                if (users[email]) {
+                    showAlert("Account pehle se bana hua hai! Please Sign In karo.");
+                    return;
+                }
+
+                users[email] = password;
+                localStorage.setItem("app_users", JSON.stringify(users));
+                
+                localStorage.setItem("user", JSON.stringify({
+                    email: email,
+                    isLoggedIn: true,
+                    loginTime: new Date().toISOString()
+                }));
+
+                showAlert("Account Created Successfully! Redirecting...", "success");
+                setTimeout(() => { window.location.href = "/"; }, 600);
+            }
+        }
+    </script>
+</body>
+</html>
