@@ -250,3 +250,20 @@ body {
   .hero-inner { flex-direction: column; align-items: flex-start; }
   .filters { flex-direction: column; align-items: stretch; }
 }
+/* ---------- Bookmark Button ---------- */
+.bookmark-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  padding: 0 4px;
+}
+.bookmark-btn:hover {
+  transform: scale(1.15);
+  color: #fbbf24; /* Yellow color */
+}
+.bookmark-btn.active {
+  color: #f59e0b; /* Darker yellow for active */
+}
