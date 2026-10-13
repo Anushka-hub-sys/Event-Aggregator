@@ -684,4 +684,44 @@ body {
   .hero-wrapper { grid-template-columns: 1fr; gap: 32px; }
   .auth-grid { grid-template-columns: 1fr; }
   .nav-menu { display: none; }
+@media (max-width: 620px) {
+  .hero-inner { flex-direction: column; align-items: flex-start; }
+  .filters { flex-direction: column; align-items: stretch; }
+}
+/* ---------- Bookmark Button ---------- */
+.bookmark-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  padding: 0 4px;
+}
+.bookmark-btn:hover {
+  transform: scale(1.15);
+  color: #fbbf24; /* Yellow color */
+}
+.bookmark-btn.active {
+  color: #f59e0b; /* Darker yellow for active */
+}
+/* ---------- Date Picker ---------- */
+.filters input[type="date"] {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.filters input[type="date"]:focus {
+  border-color: var(--primary);
+}
+/* Calendar icon ko white karne ke liye */
+.filters input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
 }

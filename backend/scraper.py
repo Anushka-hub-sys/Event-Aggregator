@@ -98,8 +98,6 @@ class KontestsLiveScraper(BaseScraper):
 
     async def fetch(self) -> list[ScrapedEvent]:
         events: list[ScrapedEvent] = []
-        
-        # Try Kontests first
         try:
             async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": USER_AGENT}) as client:
                 res = await client.get("https://kontests.net/api/v1/all")
@@ -127,7 +125,6 @@ class KontestsLiveScraper(BaseScraper):
         except Exception:
             logger.info("Kontests API unreachable, falling back to Codeforces API...")
 
-        # Robust Fallback: Official Codeforces Contest API
         async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": USER_AGENT}) as client:
             res = await client.get("https://codeforces.com/api/contest.list?gym=false")
             if res.status_code == 200:
@@ -161,7 +158,7 @@ class KontestsLiveScraper(BaseScraper):
 
 
 # --------------------------------------------------------------------------
-# 2. UNSTOP SCRAPER
+# 2. UNSTOP SCRAPER (Hackathons)
 # --------------------------------------------------------------------------
 class UnstopLiveScraper(BaseScraper):
     source_name = "unstop"
@@ -209,17 +206,21 @@ class UnstopLiveScraper(BaseScraper):
                 )
             )
         return events
-    # --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
 # 5. UNSTOP WEBINARS & WORKSHOPS
 # --------------------------------------------------------------------------
 class UnstopWebinarScraper(BaseScraper):
-    """Fetches Live Webinars and Workshops from Unstop"""
     source_name = "unstop_webinars"
 
     async def fetch(self) -> list[ScrapedEvent]:
         events: list[ScrapedEvent] = []
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
-        # Yahan humne opportunity=workshops set kiya hai
+        headers = {
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Referer": "https://unstop.com/workshops"
+        }
         api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=workshops&per_page=6"
         
         try:
@@ -237,14 +238,14 @@ class UnstopWebinarScraper(BaseScraper):
                     raw_url = f"https://unstop.com/{raw_url.lstrip('/')}"
 
                 org = clean_text(item.get("organisation", {}).get("name", "Unstop"))
-                
+                category_type = "workshop" if "workshop" in title.lower() else "webinar"
                 events.append(
                     ScrapedEvent(
                         title=title,
                         url=raw_url,
                         description=clean_text(item.get("sub_title") or "Live tech workshop and webinar."),
-                        source="unstop",
-                        category="webinar",  # <--- UI me 'Webinar' ya 'Workshop' category set ho jayegi
+                        source="unstop_webinars",  # <--- YE SAHI KAR DIYA HAI
+                        category=category_type,
                         mode="online",
                         organizer=org,
                         starts_at=parse_iso_datetime(item.get("start_date")),
@@ -258,7 +259,7 @@ class UnstopWebinarScraper(BaseScraper):
 
 
 # --------------------------------------------------------------------------
-# 3. DEVFOLIO SCRAPER (Safe parsing for both dict & str hits)
+# 3. DEVFOLIO SCRAPER
 # --------------------------------------------------------------------------
 class DevfolioLiveScraper(BaseScraper):
     source_name = "devfolio"
@@ -319,7 +320,6 @@ class DevfolioLiveScraper(BaseScraper):
         except Exception as e:
             logger.warning("Devfolio fetch error: %s", e)
 
-        # Fallback if Devfolio response is empty
         if not events:
             events.append(
                 ScrapedEvent(
@@ -378,8 +378,142 @@ class GDGLiveScraper(BaseScraper):
                 )
             )
         return events
+# --------------------------------------------------------------------------
+# 6. REAL TECH CONFERENCES (Confs.tech Open Data)
+# --------------------------------------------------------------------------
+class TechConferenceScraper(BaseScraper):
+    source_name = "tech_conferences"
 
+    async def fetch(self) -> list[ScrapedEvent]:
+        events: list[ScrapedEvent] = []
+        # Real GitHub hosted JSON for 2026 tech conferences
+        api_url = "https://raw.githubusercontent.com/tech-conferences/conference-data/main/conferences/2026/javascript.json"
+        
+        try:
+            async with httpx.AsyncClient(timeout=10.0, headers={"User-Agent": USER_AGENT}) as client:
+                res = await client.get(api_url)
+                if res.status_code == 200:
+                    data = res.json()
+                    # Top 15 upcoming real conferences uthayenge
+                    for item in data[:15]:
+                        title = clean_text(item.get("name"))
+                        if not title:
+                            continue
+                            
+                        city = item.get("city", "")
+                        country = item.get("country", "")
+                        loc = f"{city}, {country}".strip(", ")
+                        
+                        events.append(
+                            ScrapedEvent(
+                                title=title,
+                                url=item.get("url", ""),
+                                description=f"Live tech conference happening in {loc or 'Online'}.",
+                                source="tech_conferences",
+                                category="conference",
+                                mode="offline" if city else "online",
+                                location=loc,
+                                organizer="Global Tech Community",
+                                starts_at=parse_iso_datetime(item.get("startDate")),
+                                deadline=parse_iso_datetime(item.get("endDate")),
+                            )
+                        )
+        except Exception as e:
+            logger.warning("Confs.tech fetch error: %s", e)
+            
+        return events   
+# --------------------------------------------------------------------------
+# 7. UNSTOP COMPETITIONS & HIRING CHALLENGES (For 'Other' Category)
+# --------------------------------------------------------------------------
+class UnstopOtherScraper(BaseScraper):
+    source_name = "unstop_other"
 
+    async def fetch(self) -> list[ScrapedEvent]:
+        events: list[ScrapedEvent] = []
+        headers = {
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Referer": "https://unstop.com/competitions"
+        }
+        # Real API endpoint for general competitions & hiring challenges
+        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=competitions&per_page=8"
+        
+        try:
+            async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
+                res = await client.get(api_url)
+                if res.status_code != 200: return events
+                payload = res.json()
+
+            cards = payload.get("data", {}).get("data", [])
+            for item in cards:
+                if not isinstance(item, dict): continue
+                title = clean_text(item.get("title"))
+                raw_url = item.get("seo_url") or item.get("public_url") or ""
+                if not raw_url.startswith("http"):
+                    raw_url = f"https://unstop.com/{raw_url.lstrip('/')}"
+
+                org = clean_text(item.get("organisation", {}).get("name", "Unstop"))
+                
+                events.append(
+                    ScrapedEvent(
+                        title=title,
+                        url=raw_url,
+                        description=clean_text(item.get("sub_title") or "Live competition or hiring challenge."),
+                        source="unstop_other",
+                        category="other",  # <--- Ye directly 'Other' filter me jayega
+                        mode="online" if "online" in str(item.get("region", "")).lower() else "hybrid",
+                        organizer=org,
+                        starts_at=parse_iso_datetime(item.get("start_date")),
+                        deadline=parse_iso_datetime(item.get("end_date") or item.get("regnRequirements", {}).get("end_regn_date"))
+                    )
+                )
+        except Exception as e:
+            logger.warning("Unstop other fetch error: %s", e)
+            
+        return events
+# --------------------------------------------------------------------------
+# 8. TECH MEETUPS (CNCF Community Open Data)
+# --------------------------------------------------------------------------
+class CNCFMeetupScraper(BaseScraper):
+    source_name = "cncf_meetups"
+
+    async def fetch(self) -> list[ScrapedEvent]:
+        events: list[ScrapedEvent] = []
+        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        
+        # Real Live API endpoint for CNCF tech meetups (Same architecture as GDG)
+        api_url = "https://community.cncf.io/api/event/?status=Live&page_size=12"
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
+                res = await client.get(api_url)
+                if res.status_code != 200: return events
+                data = res.json()
+
+            results = data.get("results", [])
+            for item in results:
+                if not isinstance(item, dict): continue
+                title = clean_text(item.get("title"))
+                url = item.get("url") or f"https://community.cncf.io/events/details/{item.get('id')}"
+                
+                events.append(
+                    ScrapedEvent(
+                        title=title,
+                        url=url,
+                        description=clean_text(item.get("description_short") or "Cloud Native & Open Source tech meetup."),
+                        source="cncf_meetups",
+                        category="meetup",  # <--- Ye directly tumhare 'Meetup' filter me jayega
+                        mode="offline" if item.get("event_type_title") == "In-person" else "online",
+                        location=clean_text(item.get("city", "")),
+                        organizer="CNCF Community",
+                        starts_at=parse_iso_datetime(item.get("start_date")),
+                        deadline=parse_iso_datetime(item.get("start_date")) # Meetups usually same day par hote hain
+                    )
+                )
+        except Exception as e:
+            logger.warning("CNCF Meetups fetch error: %s", e)
+
+        return events    
 # --------------------------------------------------------------------------
 # RUNNER & DB UPSERT
 # --------------------------------------------------------------------------
@@ -390,6 +524,9 @@ async def run_all_scrapers(include_live: bool = True) -> tuple[list[ScrapedEvent
         UnstopWebinarScraper(),
         DevfolioLiveScraper(),
         GDGLiveScraper(),
+        TechConferenceScraper(),
+        UnstopOtherScraper(),
+        CNCFMeetupScraper(),
     ]
 
     collected: list[ScrapedEvent] = []
@@ -409,6 +546,7 @@ async def run_all_scrapers(include_live: bool = True) -> tuple[list[ScrapedEvent
 
     return collected, errors, names
 
+
 def build_simulated_event() -> ScrapedEvent:
     token = uuid.uuid4().hex[:8]
     return ScrapedEvent(
@@ -422,6 +560,8 @@ def build_simulated_event() -> ScrapedEvent:
         starts_at=days_from_now(10),
         deadline=days_from_now(7),
     )
+
+
 def upsert_events(db: Session, scraped: list[ScrapedEvent]) -> tuple[list[Event], int]:
     new_events: list[Event] = []
     skipped = 0

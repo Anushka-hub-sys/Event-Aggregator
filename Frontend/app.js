@@ -7,6 +7,8 @@ const state = {
   sort: "recent",
   upcoming: false,
   loading: false,
+  bookmarked_only: false,
+  date: "", 
 };
 
 const el = {
@@ -24,6 +26,8 @@ const el = {
   form: document.getElementById("eventForm"),
   cancelBtn: document.getElementById("cancelBtn"),
   toast: document.getElementById("toast"),
+  bookmark: document.getElementById("bookmarkFilter"),
+  date: document.getElementById("dateFilter"),
 };
 
 /* ------------------------------------------------------------------ */
@@ -124,6 +128,30 @@ async function loadEvents() {
 /* Rendering                                                           */
 /* ------------------------------------------------------------------ */
 function renderEvents(events) {
+  // 1. Local storage se bookmarks uthao
+  const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+
+  // 2. Agar filter ON hai, to sirf bookmarks wale events dikhao
+  if (state.bookmarked_only) {
+    events = events.filter(e => bookmarks.includes(e.url));
+  }
+  // --- DATE FILTER LOGIC ---
+  if (state.date) {
+    const selectedTime = new Date(state.date).getTime();
+    
+    events = events.filter(e => {
+      if (!e.starts_at) return false;
+      
+      // Timezone issue se bachne ke liye sirf date ('YYYY-MM-DD') extract kar rahe hain
+      const start = new Date(e.starts_at.split('T')[0]).getTime();
+      const end = e.deadline ? new Date(e.deadline.split('T')[0]).getTime() : start;
+      
+      // Agar select ki hui date start aur deadline ke beech me hai, toh event dikhao
+      return selectedTime >= start && selectedTime <= end;
+    });
+  }
+  // --------------------------
+
   if (!events.length) {
     el.grid.innerHTML = "";
     el.empty.classList.remove("hidden");
@@ -134,12 +162,20 @@ function renderEvents(events) {
   el.grid.innerHTML = events
     .map((event) => {
       const deadline = deadlineLabel(event.deadline);
+      // Check karo ki kya is event ka URL bookmarks array me hai
+      const isMarked = bookmarks.includes(event.url);
+      const safeUrl = encodeURIComponent(event.url);
+
       return `
         <article class="card">
           <div class="card-head">
             <h3><a href="${escapeHtml(event.url)}" target="_blank" rel="noopener noreferrer">
               ${escapeHtml(event.title)}
             </a></h3>
+            <!-- BOOKMARK BUTTON -->
+            <button onclick="toggleBookmark(decodeURIComponent('${safeUrl}'))" class="bookmark-btn ${isMarked ? 'active' : ''}" title="Bookmark this event">
+              ${isMarked ? '★' : '☆'}
+            </button>
           </div>
 
           <div class="meta">
@@ -156,6 +192,7 @@ function renderEvents(events) {
           </div>
 
           <div class="card-foot">
+            <span>🗓 ${formatDate(event.starts_at)}</span>
             <div>
               <span class="${deadline.cls}">${deadline.text}</span>
               <button onclick="confirmDelete(${event.id})" class="delete-btn" title="Delete Event">🗑️</button>
@@ -229,6 +266,20 @@ async function executeDelete() {
 }
 
 window.confirmDelete = confirmDelete;
+window.toggleBookmark = function(url) {
+  let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+  
+  if (bookmarks.includes(url)) {
+    // Agar pehle se hai, to hata do
+    bookmarks = bookmarks.filter(b => b !== url);
+  } else {
+    // Nahi hai to add kar do
+    bookmarks.push(url);
+  }
+  
+  localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  loadEvents(); // UI ko refresh karne ke liye
+}
 
 // Buttons ko event listeners ke sath jodna
 document.getElementById("cancelDeleteBtn").addEventListener("click", closeDeleteModal);
@@ -299,6 +350,8 @@ el.cancelBtn.addEventListener("click", closeModal);
 el.modal.addEventListener("click", (e) => { if (e.target === el.modal) closeModal(); });
 el.form.addEventListener("submit", handleSubmit);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+el.bookmark.addEventListener("change", (e) => { state.bookmarked_only = e.target.checked; loadEvents(); });
+el.date.addEventListener("change", (e) => { state.date = e.target.value; loadEvents(); });
 
 /* ------------------------------------------------------------------ */
 /* Boot                                                                */
