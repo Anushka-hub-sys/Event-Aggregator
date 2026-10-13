@@ -156,8 +156,10 @@ function renderEvents(events) {
           </div>
 
           <div class="card-foot">
-            <span>🗓 ${formatDate(event.starts_at)}</span>
-            <span class="${deadline.cls}">${deadline.text}</span>
+            <div>
+              <span class="${deadline.cls}">${deadline.text}</span>
+              <button onclick="confirmDelete(${event.id})" class="delete-btn" title="Delete Event">🗑️</button>
+            </div>
           </div>
         </article>`;
     })
@@ -196,6 +198,44 @@ async function handleScrape(simulateNew) {
     button.textContent = original;
   }
 }
+
+let eventToDelete = null;
+
+// Ye function box ko open karega
+function confirmDelete(id) {
+  eventToDelete = id;
+  document.getElementById("deleteModalBackdrop").classList.remove("hidden");
+}
+
+// Ye function box ko band karega
+function closeDeleteModal() {
+  eventToDelete = null;
+  document.getElementById("deleteModalBackdrop").classList.add("hidden");
+}
+
+// Ye function actual me backend se delete karega
+async function executeDelete() {
+  if (!eventToDelete) return;
+  const id = eventToDelete;
+  closeDeleteModal(); // Delete click hote hi pehle box band karo
+  
+  try {
+    await apiFetch(`/events/${id}`, { method: "DELETE" });
+    toast("Event deleted successfully!", "success");
+    await Promise.all([loadEvents(), loadStats()]);
+  } catch (error) {
+    toast(error.message, "error");
+  }
+}
+
+window.confirmDelete = confirmDelete;
+
+// Buttons ko event listeners ke sath jodna
+document.getElementById("cancelDeleteBtn").addEventListener("click", closeDeleteModal);
+document.getElementById("confirmDeleteBtn").addEventListener("click", executeDelete);
+document.getElementById("deleteModalBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "deleteModalBackdrop") closeDeleteModal();
+});
 
 async function handleSubmit(formEvent) {
   formEvent.preventDefault();
