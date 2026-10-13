@@ -17,6 +17,25 @@
         <button id="scrapeBtn" class="btn btn-primary">🔄 Scrape now</button>
         <button id="demoBtn" class="btn btn-ghost">✨ Demo new event</button>
         <button id="addBtn" class="btn btn-ghost">＋ Add event</button>
+
+        <!-- Dynamic Auth Box -->
+        <div id="authContainer" style="display: inline-flex; align-items: center; margin-left: 0.5rem;">
+          <!-- Default: Login Button -->
+          <a href="/login.html" id="loginBtn" class="btn btn-ghost" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+            👤 <span>Login</span>
+          </a>
+
+          <!-- Logged In Profile Box -->
+          <div id="userProfileBox" style="display: none; align-items: center; gap: 0.6rem;">
+            <div style="background: rgba(99, 102, 241, 0.15); border: 1px solid #6366f1; color: #a5b4fc; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.45rem;">
+              <span style="display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%;"></span>
+              <span id="userEmailBadge">Logged in</span>
+            </div>
+            <button onclick="handleLogout()" class="btn btn-ghost" style="color: #f87171; border-color: #3f3f46; padding: 0.45rem 0.75rem;">
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -120,6 +139,47 @@
 
   <div id="toast" class="toast hidden"></div>
 
+  <!-- Main Application Script -->
   <script src="./app.js"></script>
+
+  <!-- Auth State & User Activity Script -->
+  <script>
+    function getActiveUser() {
+      try {
+        const raw = localStorage.getItem("user");
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderAuthState() {
+      const user = getActiveUser();
+      const loginBtn = document.getElementById("loginBtn");
+      const userProfileBox = document.getElementById("userProfileBox");
+      const userEmailBadge = document.getElementById("userEmailBadge");
+
+      if (user && user.isLoggedIn) {
+        if (loginBtn) loginBtn.style.display = "none";
+        if (userProfileBox) userProfileBox.style.display = "inline-flex";
+        const displayName = user.email ? user.email.split("@")[0] : "User";
+        if (userEmailBadge) userEmailBadge.textContent = "Hi, " + displayName;
+      } else {
+        if (loginBtn) loginBtn.style.display = "inline-flex";
+        if (userProfileBox) userProfileBox.style.display = "none";
+      }
+    }
+
+    function handleLogout() {
+      if (confirm("Are you sure you want to log out?")) {
+        localStorage.removeItem("user");
+        renderAuthState();
+        window.location.reload();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", renderAuthState);
+    renderAuthState();
+  </script>
 </body>
 </html>
