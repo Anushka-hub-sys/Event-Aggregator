@@ -14,6 +14,7 @@ ALLOWED_CATEGORIES = {
     "meetup",
     "conference",
     "gdg",
+    "contest",
     "other",
 }
 
