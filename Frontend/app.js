@@ -8,6 +8,7 @@ const state = {
   upcoming: false,
   loading: false,
   bookmarked_only: false,
+  date: "", 
 };
 
 const el = {
@@ -26,6 +27,7 @@ const el = {
   cancelBtn: document.getElementById("cancelBtn"),
   toast: document.getElementById("toast"),
   bookmark: document.getElementById("bookmarkFilter"),
+  date: document.getElementById("dateFilter"),
 };
 
 /* ------------------------------------------------------------------ */
@@ -133,6 +135,22 @@ function renderEvents(events) {
   if (state.bookmarked_only) {
     events = events.filter(e => bookmarks.includes(e.url));
   }
+  // --- DATE FILTER LOGIC ---
+  if (state.date) {
+    const selectedTime = new Date(state.date).getTime();
+    
+    events = events.filter(e => {
+      if (!e.starts_at) return false;
+      
+      // Timezone issue se bachne ke liye sirf date ('YYYY-MM-DD') extract kar rahe hain
+      const start = new Date(e.starts_at.split('T')[0]).getTime();
+      const end = e.deadline ? new Date(e.deadline.split('T')[0]).getTime() : start;
+      
+      // Agar select ki hui date start aur deadline ke beech me hai, toh event dikhao
+      return selectedTime >= start && selectedTime <= end;
+    });
+  }
+  // --------------------------
 
   if (!events.length) {
     el.grid.innerHTML = "";
@@ -333,6 +351,7 @@ el.modal.addEventListener("click", (e) => { if (e.target === el.modal) closeModa
 el.form.addEventListener("submit", handleSubmit);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 el.bookmark.addEventListener("change", (e) => { state.bookmarked_only = e.target.checked; loadEvents(); });
+el.date.addEventListener("change", (e) => { state.date = e.target.value; loadEvents(); });
 
 /* ------------------------------------------------------------------ */
 /* Boot                                                                */
