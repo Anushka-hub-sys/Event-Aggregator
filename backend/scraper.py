@@ -170,7 +170,7 @@ class UnstopLiveScraper(BaseScraper):
             "Accept": "application/json",
             "Referer": "https://unstop.com/hackathons",
         }
-        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=hackathons&per_page=12"
+        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=hackathons&per_page=100"
         
         async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
             res = await client.get(api_url)
@@ -221,7 +221,7 @@ class UnstopWebinarScraper(BaseScraper):
             "Accept": "application/json",
             "Referer": "https://unstop.com/workshops"
         }
-        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=workshops&per_page=6"
+        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=workshops&per_page=100"
         
         try:
             async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
@@ -347,7 +347,7 @@ class GDGLiveScraper(BaseScraper):
     async def fetch(self) -> list[ScrapedEvent]:
         events: list[ScrapedEvent] = []
         headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
-        api_url = "https://gdg.community.dev/api/event/?status=Live&page_size=10"
+        api_url = "https://gdg.community.dev/api/event/?status=Live&page_size=100"
 
         async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
             res = await client.get(api_url)
@@ -386,7 +386,7 @@ class TechConferenceScraper(BaseScraper):
 
     async def fetch(self) -> list[ScrapedEvent]:
         events: list[ScrapedEvent] = []
-        # Real GitHub hosted JSON for 2026 tech conferences
+        
         api_url = "https://raw.githubusercontent.com/tech-conferences/conference-data/main/conferences/2026/javascript.json"
         
         try:
@@ -435,8 +435,8 @@ class UnstopOtherScraper(BaseScraper):
             "Accept": "application/json",
             "Referer": "https://unstop.com/competitions"
         }
-        # Real API endpoint for general competitions & hiring challenges
-        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=competitions&per_page=8"
+        
+        api_url = "https://unstop.com/api/public/opportunity/search-result?opportunity=competitions&per_page=100"
         
         try:
             async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
@@ -481,8 +481,8 @@ class CNCFMeetupScraper(BaseScraper):
         events: list[ScrapedEvent] = []
         headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
         
-        # Real Live API endpoint for CNCF tech meetups (Same architecture as GDG)
-        api_url = "https://community.cncf.io/api/event/?status=Live&page_size=12"
+    
+        api_url = "https://community.cncf.io/api/event/?status=Live&page_size=100"
 
         try:
             async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:

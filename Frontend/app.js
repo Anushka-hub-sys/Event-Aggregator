@@ -40,7 +40,7 @@ function toast(message, type = "") {
   toast._t = setTimeout(() => el.toast.classList.add("hidden"), 3800);
 }
 
-// Backend stores naive UTC datetimes; append "Z" if there is no offset.
+
 function parseDate(value) {
   if (!value) return null;
   const hasZone = /Z$|[+-]\d{2}:?\d{2}$/.test(value);
@@ -128,10 +128,10 @@ async function loadEvents() {
 /* Rendering                                                           */
 /* ------------------------------------------------------------------ */
 function renderEvents(events) {
-  // 1. Local storage se bookmarks uthao
+  
   const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
 
-  // 2. Agar filter ON hai, to sirf bookmarks wale events dikhao
+  
   if (state.bookmarked_only) {
     events = events.filter(e => bookmarks.includes(e.url));
   }
@@ -142,15 +142,15 @@ function renderEvents(events) {
     events = events.filter(e => {
       if (!e.starts_at) return false;
       
-      // Timezone issue se bachne ke liye sirf date ('YYYY-MM-DD') extract kar rahe hain
+      
       const start = new Date(e.starts_at.split('T')[0]).getTime();
       const end = e.deadline ? new Date(e.deadline.split('T')[0]).getTime() : start;
       
-      // Agar select ki hui date start aur deadline ke beech me hai, toh event dikhao
+      
       return selectedTime >= start && selectedTime <= end;
     });
   }
-  // --------------------------
+  
 
   if (!events.length) {
     el.grid.innerHTML = "";
@@ -162,7 +162,7 @@ function renderEvents(events) {
   el.grid.innerHTML = events
     .map((event) => {
       const deadline = deadlineLabel(event.deadline);
-      // Check karo ki kya is event ka URL bookmarks array me hai
+      
       const isMarked = bookmarks.includes(event.url);
       const safeUrl = encodeURIComponent(event.url);
       const safeTitleForAI = encodeURIComponent(event.title + " tech event dark neon background");
@@ -242,23 +242,23 @@ async function handleScrape(simulateNew) {
 
 let eventToDelete = null;
 
-// Ye function box ko open karega
+
 function confirmDelete(id) {
   eventToDelete = id;
   document.getElementById("deleteModalBackdrop").classList.remove("hidden");
 }
 
-// Ye function box ko band karega
+
 function closeDeleteModal() {
   eventToDelete = null;
   document.getElementById("deleteModalBackdrop").classList.add("hidden");
 }
 
-// Ye function actual me backend se delete karega
+
 async function executeDelete() {
   if (!eventToDelete) return;
   const id = eventToDelete;
-  closeDeleteModal(); // Delete click hote hi pehle box band karo
+  closeDeleteModal(); 
   
   try {
     await apiFetch(`/events/${id}`, { method: "DELETE" });
@@ -274,18 +274,18 @@ window.toggleBookmark = function(url) {
   let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
   
   if (bookmarks.includes(url)) {
-    // Agar pehle se hai, to hata do
+    
     bookmarks = bookmarks.filter(b => b !== url);
   } else {
-    // Nahi hai to add kar do
+    
     bookmarks.push(url);
   }
   
   localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-  loadEvents(); // UI ko refresh karne ke liye
+  loadEvents(); 
 }
 
-// Buttons ko event listeners ke sath jodna
+
 document.getElementById("cancelDeleteBtn").addEventListener("click", closeDeleteModal);
 document.getElementById("confirmDeleteBtn").addEventListener("click", executeDelete);
 document.getElementById("deleteModalBackdrop").addEventListener("click", (e) => {
@@ -301,7 +301,7 @@ async function handleSubmit(formEvent) {
     if (payload[key] === "") delete payload[key];
   });
 
-  // <input type="date"> gives "YYYY-MM-DD" — expand to full ISO datetime.
+  
   ["starts_at", "deadline"].forEach((key) => {
     if (payload[key]) payload[key] = `${payload[key]}T23:59:00`;
   });
@@ -337,14 +337,14 @@ el.search.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
     const query = e.target.value.trim();
     
-    // Agar search bar khali hai, toh saare events wapas le aao
+    
     if (!query) {
       state.q = "";
       loadEvents();
       return;
     }
 
-    // AI Loading State
+    
     el.grid.innerHTML = `<p style="text-align:center; width:100%; color:#a855f7;">✨ AI is scanning events context... please wait.</p>`;
     
     try {
@@ -352,7 +352,7 @@ el.search.addEventListener("keypress", async (e) => {
       if (res.ok) {
         let aiEvents = await res.json();
         
-        // Tumhara date/bookmark filter yahan bhi kaam karega
+        
         const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
         if (state.bookmarked_only) {
           aiEvents = aiEvents.filter(e => bookmarks.includes(e.url));
@@ -411,8 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatInputMsg = document.getElementById("chatInputMsg");
   const sendChatBtn = document.getElementById("sendChatBtn");
 
-  if(!chatToggleBtn) return; // Agar HTML load nahi hua toh error nahi aayega
-
+  if(!chatToggleBtn) return; 
   chatToggleBtn.addEventListener("click", () => chatWidget.classList.toggle("hidden"));
   closeChatBtn.addEventListener("click", () => chatWidget.classList.add("hidden"));
 
@@ -456,12 +455,12 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ------------------------------------------------------------------ */
 document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
   link.addEventListener('click', function() {
-    // Sabse pehle saare links se 'active' class (green line) hata do
+    
     document.querySelectorAll('.nav-menu .nav-item').forEach(nav => {
       nav.classList.remove('active');
     });
     
-    // Ab jis link par click hua hai, sirf usme 'active' class laga do
+    
     this.classList.add('active');
   });
 });

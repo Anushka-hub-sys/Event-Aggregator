@@ -19,9 +19,9 @@ git clone <your-repo-url>
 cd event-aggregator
 
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        
 
 pip install -r requirements.txt
-cp .env.example .env             # then paste your Discord webhook URL
+cp .env.example .env             
 
 uvicorn backend.main:app --reload

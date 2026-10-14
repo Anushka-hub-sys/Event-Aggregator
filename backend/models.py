@@ -21,13 +21,13 @@ class Event(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     url: Mapped[str] = mapped_column(String(600), unique=True, nullable=False, index=True)
 
-    # where it came from: "unstop", "gdg", "devfolio", "manual", ...
+    
     source: Mapped[str] = mapped_column(String(60), default="manual", index=True)
 
-    # hackathon | coding | workshop | webinar | meetup | conference | gdg | other
+    
     category: Mapped[str] = mapped_column(String(40), default="other", index=True)
 
-    # online | offline | hybrid
+    
     mode: Mapped[str] = mapped_column(String(20), default="online", index=True)
 
     location: Mapped[str] = mapped_column(String(255), default="")
@@ -41,5 +41,5 @@ class Event(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
-    def __repr__(self) -> str:  # pragma: no cover - debugging helper
+    def __repr__(self) -> str:  
         return f"<Event id={self.id} title={self.title!r} source={self.source!r}>"

@@ -130,7 +130,6 @@
     <!-- Filters Bar -->
     <section class="filters">
       <input type="search" id="searchInput" placeholder="Search events, organizers, tags..." />
-      <input type="search" id="searchInput" placeholder="Search events, organizers..." />
       <input type="date" id="dateFilter" title="Find events active on this date" />
       <select id="categoryFilter">
         <option value="">All categories</option>
@@ -210,7 +209,7 @@
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal (Expected by app.js) -->
+  
   <div class="modal-backdrop hidden" id="deleteModalBackdrop">
     <div class="modal" style="max-width: 420px; text-align: center;">
       <h2 style="font-size: 1.2rem; margin-bottom: 8px;">Delete Event?</h2>
@@ -226,10 +225,10 @@
 
   <div id="toast" class="toast hidden"></div>
 
-  <!-- Main Backend Script -->
+  
   <script src="./app.js"></script>
 
-  <!-- Auth State Sync -->
+  
   <script>
     const addNavBtn = document.getElementById("addNavBtn");
     if (addNavBtn) {
@@ -297,7 +296,7 @@
     <button id="sendChatBtn">Send</button>
   </div>
 </div>
-<!-- Main Backend Script -->
+
 <script src="./app.js"></script>
   
 </body>

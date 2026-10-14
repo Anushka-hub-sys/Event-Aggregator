@@ -26,7 +26,7 @@ class Settings:
 
     DISCORD_WEBHOOK_URL: str = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
 
-    # Add this line for your AI features:
+   
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "").strip()
 
     CORS_ORIGINS: list[str] = [

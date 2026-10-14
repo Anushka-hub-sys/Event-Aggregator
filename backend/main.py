@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 load_dotenv()
-# Groq Setup - Simple aur 100% working
+
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 class ChatRequest(BaseModel):
@@ -92,7 +92,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=False,  # must stay False while allow_origins is "*"
+    allow_credentials=False,  
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -208,7 +208,7 @@ def create_event(
 
     event_out = schemas.EventOut.model_validate(event)
 
-    # Fire-and-forget: the HTTP response does not wait for Discord.
+    
     background.add_task(notify_new_events, [event_out])
 
     return event_out
@@ -391,7 +391,7 @@ def chat_bot(req: ChatRequest, db: Session = Depends(get_db)):
     user_query = req.text
     
     events = db.execute(select(models.Event).order_by(models.Event.starts_at).limit(100)).scalars().all()
-    # Fix 1: Agar date na ho toh 'None' ki jagah 'TBA' (To Be Announced) dikhaye
+    
     events_list = "\n".join([
         f"- {e.title} ({e.category}) at {e.location or 'Online'} on {e.starts_at or 'TBA'}." 
         for e in events
@@ -412,14 +412,14 @@ def chat_bot(req: ChatRequest, db: Session = Depends(get_db)):
     """
     
     try:
-        # Saare models ki list nikalo
+        
         all_models = [m.id for m in client.models.list().data]
         
-        # Kachra models (guard, whisper) hata do
+        
         chat_models = [m for m in all_models if "guard" not in m.lower() and "whisper" not in m.lower()]
         
-        # Sabse powerful fallback priority list
-        working_model = chat_models[0] # Default fallback
+        
+        working_model = chat_models[0] 
         for m in ["llama-3.1-70b-versatile", "llama-3.2-90b-text-preview", "llama3-70b-8192", "gemma2-9b-it"]:
             if m in chat_models:
                 working_model = m
@@ -448,12 +448,12 @@ else:
     logger.warning("frontend/ directory not found - only the API will be served.")
 
 
-# Yahan se AI search aur Chatbot ka code shuru hota hai
+
 logger.info("Loading AI Model for Semantic Search...")
 ai_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
-# Ye block hamesha file ke last me hi rehna chahiye
-if __name__ == "__main__":  # pragma: no cover
+
+if __name__ == "__main__":  
     import uvicorn
     uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)

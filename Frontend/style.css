@@ -1,6 +1,4 @@
-/* ==========================================================================
-   EVENT AGGREGATOR - 1:1 Pixel-Perfect Dark Cyber Theme
-   ========================================================================== */
+
 
 :root {
   --bg-canvas: #060911;
@@ -32,7 +30,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-canvas);
-  /* SOH Exact Background Grid Pattern */
+ 
   background-image: 
     radial-gradient(circle at 12% 16%, rgba(45, 212, 191, 0.08) 0%, transparent 45%),
     radial-gradient(circle at 88% 32%, rgba(56, 189, 248, 0.07) 0%, transparent 45%),
@@ -43,7 +41,7 @@ body {
   min-height: 100vh;
 }
 
-/* ---------- SOH Navbar ---------- */
+
 .hero, .navbar {
   position: sticky;
   top: 0;
@@ -106,7 +104,7 @@ body {
   box-shadow: 0 0 10px var(--teal-accent);
 }
 
-/* SOH Signature White Pill Button */
+
 .btn-white-pill {
   background: #ffffff;
   color: #060911;
@@ -146,7 +144,7 @@ body {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Compatibility Buttons for app.js */
+
 .btn {
   border: 1px solid transparent;
   border-radius: 9999px;
@@ -174,7 +172,7 @@ body {
 }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ---------- Hero 2-Column Section ---------- */
+
 .hero-wrapper {
   max-width: 1260px;
   margin: 3.2rem auto 2.5rem;
@@ -225,7 +223,7 @@ body {
   margin-bottom: 2.5rem;
 }
 
-/* SOH Stats Row */
+
 .stats {
   display: flex;
   gap: 14px;
@@ -257,7 +255,7 @@ body {
   text-transform: capitalize;
 }
 
-/* ---------- Trending Engine Card ---------- */
+
 .trending-engine-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -317,7 +315,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ---------- Main Container & Filters ---------- */
+
 .container {
   max-width: 1260px;
   margin: 3rem auto 0;
@@ -385,7 +383,7 @@ body {
   cursor: pointer;
 }
 
-/* ---------- Cards Grid & Netflix-Style Hover ---------- */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -404,7 +402,7 @@ body {
   cursor: pointer;
   overflow: hidden;
   
-  /* Netflix Smooth Scale */
+
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.32s ease,
@@ -413,18 +411,22 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-8px) scale(1.035);
+  
+  transform: translateY(-8px) scale(1.08);
   z-index: 10;
   background: var(--bg-card-hover);
   border-color: var(--border-active);
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85),
-              0 0 24px var(--teal-glow);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9),
+              0 0 30px var(--teal-glow);
+              
+  
+  transition-delay: 0.4s; 
 }
 
 .card-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
 }
 
@@ -493,7 +495,7 @@ body {
 .empty { text-align: center; color: var(--text-muted); padding: 60px 20px; }
 .hidden { display: none !important; }
 
-/* ---------- SOH 2-Column Auth Layout ---------- */
+
 .auth-page-wrapper {
   max-width: 1040px;
   margin: 3.5rem auto 4rem;
@@ -602,7 +604,7 @@ body {
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
 }
 
-/* Feedback Alerts */
+
 .auth-alert {
   display: none;
   padding: 0.75rem 1rem;
@@ -694,42 +696,44 @@ body {
 .bookmark-btn {
   background: transparent;
   border: none;
-  color: var(--muted);
-  font-size: 1.4rem;
+  color: var(--text--muted);
+  font-size: 1.5rem;
   cursor: pointer;
-  transition: transform 0.2s ease, color 0.2s ease;
-  padding: 0 4px;
+  transition: all 0.2s;
+  padding-top: 2px;
 }
 .bookmark-btn:hover {
   transform: scale(1.15);
-  color: #fbbf24; /* Yellow color */
+  color: #fbbf24; 
 }
 .bookmark-btn.active {
-  color: #f59e0b; /* Darker yellow for active */
+  color: #f59e0b; 
 }
 /* ---------- Date Picker ---------- */
 .filters input[type="date"] {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+  color: #ffffff; 
   border-radius: 10px;
-  padding: 9px 12px;
+  padding: 10px 14px;
   font-size: 0.88rem;
   outline: none;
   cursor: pointer;
   font-family: inherit;
 }
+
 .filters input[type="date"]:focus {
-  border-color: var(--primary);
+  border-color: var(--teal-accent);
 }
-/* Calendar icon ko white karne ke liye */
+
+
 .filters input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
   cursor: pointer;
 }
 .card-image {
   display: block;
-  width: calc(100% + 50px); /* Halka sa bada taaki gap na bache */
+  width: calc(100% + 50px); 
   max-width: none;
   height: 160px;
   object-fit: cover;
@@ -738,7 +742,7 @@ body {
 }
 /* ---------- AI Chatbot (Fixed Theme) ---------- */
 
-/* Chat ka Gol Robot Button */
+
 .chat-toggle-btn {
   position: fixed !important;
   bottom: 30px !important;
@@ -746,7 +750,7 @@ body {
   width: 65px;
   height: 65px;
   border-radius: 50%;
-  background: rgb(19, 34, 38); /* Theme color use kiya */
+  background: rgb(19, 34, 38); 
   color: #060911;
   border: 1px solid rgba(255,255,255,0.1);
   font-size: 2.2rem;
@@ -762,8 +766,7 @@ body {
   transform: scale(1.1);
 }
 
-/* Chat Widget Box */
-/* Chat Widget Box (Main Container) */
+
 .chat-widget {
   position: fixed !important;
   bottom: 110px !important;
@@ -771,7 +774,7 @@ body {
   width: 380px !important;
   height: 500px !important;
   
-  /* Yahan changes kiye hain: Opacity 0.55 se 0.40 ki aur Blur 16px se 32px kiya */
+  
   background: rgba(11, 18, 32, 0.40); 
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px); 
@@ -788,7 +791,7 @@ body {
 .chat-widget.hidden { display: none !important; }
 
 .chat-header {
-  background: transparent; /* Taki piche ka blur dikhe */
+  background: transparent; 
   padding: 16px;
   font-size: 1.1rem;
   display: flex;
@@ -815,7 +818,7 @@ body {
   max-width: 85%;
   line-height: 1.4;
 }
-/* Bubbles ke naye colors */
+
 .bot-msg { background: rgba(255, 255, 255, 0.08); align-self: flex-start; color: var(--text-heading); }
 .user-msg { background: var(--teal-accent); color: #060911; font-weight: 500; align-self: flex-end; }
 
@@ -823,7 +826,7 @@ body {
   display: flex;
   padding: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent; /* Taki piche ka blur dikhe */
+  background: transparent; 
 }
 .chat-footer input {
   flex: 1;
@@ -844,4 +847,17 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.delete-btn {
+  background: transparent !important; 
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px;
+  transition: transform 0.2s;
+}
+
+.delete-btn:hover {
+  transform: scale(1.2); 
 }

@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- SOH Navbar -->
+  
   <header class="navbar">
     <div class="nav-container">
       <a href="/" class="nav-brand">SOH</a>
@@ -24,7 +24,7 @@
     </div>
   </header>
 
-  <!-- SOH 2-Box Authentication Screen -->
+ 
   <div class="auth-page-wrapper">
     <div class="auth-page-header" style="text-align: center;">
       <div class="auth-tag">AUTHENTICATION</div>
@@ -34,16 +34,16 @@
 
     <div id="alertBox" class="auth-alert" style="max-width: 420px; margin: 0 auto 20px;"></div>
 
-    <!-- Toggle Buttons (Tabs) -->
+
     <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
       <button id="tabLogin" type="button" class="btn-white-pill" onclick="showLogin()" style="width: 130px; justify-content: center;">Login</button>
       <button id="tabSignup" type="button" class="btn-white-pill" onclick="showSignup()" style="width: 130px; justify-content: center;">Sign Up</button>
     </div>
 
-    <!-- Auth Boxes -->
+    
     <div style="display: flex; justify-content: center; width: 100%;">
       
-      <!-- 1. Login Box (Default) -->
+      
       <div class="auth-box" id="loginBox" style="width: 100%; max-width: 420px;">
         <div class="auth-box-tag">WELCOME BACK</div>
         <h2>Login</h2>
@@ -60,7 +60,7 @@
         </form>
       </div>
 
-      <!-- 2. Create Account Box (Hidden by default) -->
+      
       <div class="auth-box" id="signupBox" style="display: none; width: 100%; max-width: 420px;">
         <div class="auth-box-tag">NEW HERE</div>
         <h2>Create account</h2>
@@ -89,7 +89,7 @@
   </div>
 
   <script>
-    // Tabs switch karne ka logic
+    
     function showLogin() {
       document.getElementById('loginBox').style.display = 'block';
       document.getElementById('signupBox').style.display = 'none';
@@ -124,7 +124,7 @@
 
       const users = JSON.parse(localStorage.getItem("app_registered_users") || "{}");
 
-      // Demo accounts auto-support
+      
       if (email === "admin@studenthub.dev" && password === "admin123") {
         loginUser("Admin", email);
         return;
@@ -134,7 +134,7 @@
         return;
       }
 
-      // Naya Auto-Switch Logic
+      
       if (!users[email]) {
         showAlert("Account not found. Redirecting to Sign up...", "error");
         setTimeout(() => {
