@@ -16,7 +16,7 @@
         <a href="/" class="nav-item">Events</a>
         <a href="/" class="nav-item">Trending</a>
         <a href="/" class="nav-item">Add Event</a>
-        <a href="/login.html" class="nav-item active">Login</a>
+
       </nav>
       <div>
         <a href="/login.html" class="btn-white-pill">Login</a>
@@ -26,20 +26,27 @@
 
   <!-- SOH 2-Box Authentication Screen -->
   <div class="auth-page-wrapper">
-    <div class="auth-page-header">
+    <div class="auth-page-header" style="text-align: center;">
       <div class="auth-tag">AUTHENTICATION</div>
       <h1>Simple access for submissions and comments</h1>
       <p>Demo accounts after seeding: admin <code>admin@studenthub.dev / admin123</code>, user <code>riya@studenthub.dev / demo1234</code>.</p>
     </div>
 
-    <div id="alertBox" class="auth-alert"></div>
+    <div id="alertBox" class="auth-alert" style="max-width: 420px; margin: 0 auto 20px;"></div>
 
-    <div class="auth-grid">
-      <!-- 1. Left Box: Login -->
-      <div class="auth-box">
+    <!-- Toggle Buttons (Tabs) -->
+    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
+      <button id="tabLogin" type="button" class="btn-white-pill" onclick="showLogin()" style="width: 130px; justify-content: center;">Login</button>
+      <button id="tabSignup" type="button" class="btn-white-pill" onclick="showSignup()" style="width: 130px; justify-content: center;">Sign Up</button>
+    </div>
+
+    <!-- Auth Boxes -->
+    <div style="display: flex; justify-content: center; width: 100%;">
+      
+      <!-- 1. Login Box (Default) -->
+      <div class="auth-box" id="loginBox" style="width: 100%; max-width: 420px;">
         <div class="auth-box-tag">WELCOME BACK</div>
         <h2>Login</h2>
-
         <form id="loginForm" onsubmit="handleSignIn(event)">
           <div class="form-group">
             <label for="loginEmail">Email</label>
@@ -53,11 +60,10 @@
         </form>
       </div>
 
-      <!-- 2. Right Box: Create Account -->
-      <div class="auth-box">
+      <!-- 2. Create Account Box (Hidden by default) -->
+      <div class="auth-box" id="signupBox" style="display: none; width: 100%; max-width: 420px;">
         <div class="auth-box-tag">NEW HERE</div>
         <h2>Create account</h2>
-
         <form id="signupForm" onsubmit="handleSignUp(event)">
           <div class="form-group">
             <label for="regName">Full name</label>
@@ -74,6 +80,7 @@
           <button type="submit" class="auth-submit-btn">Create account</button>
         </form>
       </div>
+      
     </div>
 
     <div style="text-align: center; margin-top: 2.5rem;">
@@ -82,10 +89,31 @@
   </div>
 
   <script>
+    // Tabs switch karne ka logic
+    function showLogin() {
+      document.getElementById('loginBox').style.display = 'block';
+      document.getElementById('signupBox').style.display = 'none';
+      document.getElementById('tabLogin').className = 'btn-white-pill';
+      document.getElementById('tabSignup').className = 'btn-ghost-pill';
+      document.getElementById('alertBox').style.display = 'none';
+    }
+
+    function showSignup(prefillEmail = "") {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('signupBox').style.display = 'block';
+      document.getElementById('tabLogin').className = 'btn-ghost-pill';
+      document.getElementById('tabSignup').className = 'btn-white-pill';
+      
+      if (prefillEmail) {
+        document.getElementById('regEmail').value = prefillEmail;
+      }
+    }
+
     function showAlert(msg, type = "error") {
       const box = document.getElementById("alertBox");
       box.className = `auth-alert ${type}`;
       box.textContent = msg;
+      box.style.display = 'block';
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -106,8 +134,12 @@
         return;
       }
 
+      // Naya Auto-Switch Logic
       if (!users[email]) {
-        showAlert("Account not found. Please create an account on the right box.");
+        showAlert("Account not found. Redirecting to Sign up...", "error");
+        setTimeout(() => {
+          showSignup(email);
+        }, 1500);
         return;
       }
 
@@ -128,7 +160,11 @@
       let users = JSON.parse(localStorage.getItem("app_registered_users") || "{}");
 
       if (users[email]) {
-        showAlert("An account with this email already exists. Please log in on the left box.");
+        showAlert("An account with this email already exists. Redirecting to Login...", "error");
+        setTimeout(() => {
+          showLogin();
+          document.getElementById('loginEmail').value = email;
+        }, 1500);
         return;
       }
 

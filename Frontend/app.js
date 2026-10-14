@@ -450,3 +450,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Enter") handleSendMessage();
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* Navbar Active Indicator Logic                                       */
+/* ------------------------------------------------------------------ */
+document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
+  link.addEventListener('click', function() {
+    // Sabse pehle saare links se 'active' class (green line) hata do
+    document.querySelectorAll('.nav-menu .nav-item').forEach(nav => {
+      nav.classList.remove('active');
+    });
+    
+    // Ab jis link par click hua hai, sirf usme 'active' class laga do
+    this.classList.add('active');
+  });
+});

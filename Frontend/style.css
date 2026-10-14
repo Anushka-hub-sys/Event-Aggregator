@@ -746,9 +746,9 @@ body {
   width: 65px;
   height: 65px;
   border-radius: 50%;
-  background: var(--teal-accent); /* Theme color use kiya */
+  background: rgb(19, 34, 38); /* Theme color use kiya */
   color: #060911;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.1);
   font-size: 2.2rem;
   cursor: pointer;
   box-shadow: 0 4px 20px var(--teal-glow);
@@ -763,14 +763,20 @@ body {
 }
 
 /* Chat Widget Box */
+/* Chat Widget Box (Main Container) */
 .chat-widget {
   position: fixed !important;
   bottom: 110px !important;
   right: 30px !important;
   width: 380px !important;
   height: 500px !important;
-  background: #0b1220; /* FIX 1: Transparent hataya, Solid dark color */
-  border: 1px solid var(--border-card);
+  
+  /* Yahan changes kiye hain: Opacity 0.55 se 0.40 ki aur Blur 16px se 32px kiya */
+  background: rgba(11, 18, 32, 0.40); 
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px); 
+  
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -779,17 +785,16 @@ body {
   overflow: hidden;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
 .chat-widget.hidden { display: none !important; }
 
 .chat-header {
-  background: #0d1526; /* Solid dark */
+  background: transparent; /* Taki piche ka blur dikhe */
   padding: 16px;
   font-size: 1.1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-card);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   font-weight: bold;
   color: var(--text-white);
 }
@@ -817,8 +822,8 @@ body {
 .chat-footer {
   display: flex;
   padding: 12px;
-  border-top: 1px solid var(--border-card);
-  background: #0d1526;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent; /* Taki piche ka blur dikhe */
 }
 .chat-footer input {
   flex: 1;

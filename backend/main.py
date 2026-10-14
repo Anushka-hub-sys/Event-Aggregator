@@ -11,7 +11,8 @@ import requests
 from groq import Groq
 from pydantic import BaseModel
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 # Groq Setup - Simple aur 100% working
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
