@@ -3,6 +3,25 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Literal
 
+
+
+from pydantic import BaseModel
+import requests
+
+from groq import Groq
+from pydantic import BaseModel
+import os
+
+# Groq Setup - Simple aur 100% working
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+class ChatRequest(BaseModel):
+    text: str
+
+
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -333,7 +352,90 @@ async def notify_test():
         raise HTTPException(status_code=400, detail=result["detail"])
     return schemas.MessageOut(detail=result["detail"])
 
+@app.get("/api/ai-search")
+def semantic_search(query: str, db: Session = Depends(get_db)):
+    events = db.execute(select(models.Event)).scalars().all()
+    if not events or not query.strip():
+        return []
+    
+    event_texts = [f"{e.title} {e.category} {e.description} {e.mode}" for e in events]
+    query_vec = ai_model.encode([query])[0]
+    event_vecs = ai_model.encode(event_texts)
+    
+    results = []
+    for i, ev_vec in enumerate(event_vecs):
+        score = np.dot(query_vec, ev_vec) / (np.linalg.norm(query_vec) * np.linalg.norm(ev_vec))
+        if score > 0.15:
+            event_dict = {
+                "id": events[i].id,
+                "title": events[i].title,
+                "url": events[i].url,
+                "description": events[i].description,
+                "source": events[i].source,
+                "category": events[i].category,
+                "mode": events[i].mode,
+                "location": events[i].location,
+                "organizer": events[i].organizer,
+                "starts_at": events[i].starts_at,
+                "deadline": events[i].deadline,
+                "ai_score": round(float(score * 100), 1)
+            }
+            results.append(event_dict)
+            
+    results.sort(key=lambda x: x["ai_score"], reverse=True)
+    return results[:10]
 
+@app.post("/api/chat")
+def chat_bot(req: ChatRequest, db: Session = Depends(get_db)):
+    user_query = req.text
+    
+    events = db.execute(select(models.Event).order_by(models.Event.starts_at).limit(100)).scalars().all()
+    # Fix 1: Agar date na ho toh 'None' ki jagah 'TBA' (To Be Announced) dikhaye
+    events_list = "\n".join([
+        f"- {e.title} ({e.category}) at {e.location or 'Online'} on {e.starts_at or 'TBA'}." 
+        for e in events
+    ])
+    
+    prompt = f"""You are a smart, cool AI Assistant for a Tech Event platform. 
+    Here is the list of upcoming events in our database:
+    {events_list}
+    
+    User message: "{user_query}"
+    
+    CRITICAL RULES:
+    1. CRITICAL RULES:
+    1. IF THE USER GREETS YOU (e.g., "hi", "hello", "hey"): Just reply with EXACTLY "Hello! I am your AI Event Assistant. What kind of tech events or meetups are you looking to attend today?" DO NOT list any events.
+    2. ONLY suggest events from the database that match what the user specifically asked for.
+    3. IF NO MATCH IS FOUND: Politely say "Sorry, I don't have any events matching that right now."
+    4. Format the events nicely with bullet points and emojis (📅, 📍). Keep it concise!
+    """
+    
+    try:
+        # Saare models ki list nikalo
+        all_models = [m.id for m in client.models.list().data]
+        
+        # Kachra models (guard, whisper) hata do
+        chat_models = [m for m in all_models if "guard" not in m.lower() and "whisper" not in m.lower()]
+        
+        # Sabse powerful fallback priority list
+        working_model = chat_models[0] # Default fallback
+        for m in ["llama-3.1-70b-versatile", "llama-3.2-90b-text-preview", "llama3-70b-8192", "gemma2-9b-it"]:
+            if m in chat_models:
+                working_model = m
+                break
+                
+        logger.info(f"Final working model: {working_model}")
+        
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model=working_model, 
+            temperature=0.3
+        )
+        return {"reply": chat_completion.choices[0].message.content}
+        
+    except Exception as e:
+        logger.error(f"Chatbot error: {e}")
+        return {"reply": "Sorry, my AI brain is sleeping right now. Try again later!"}
 # --------------------------------------------------------------------------
 # Static frontend (must be mounted LAST so /api/* wins)
 # --------------------------------------------------------------------------
@@ -345,7 +447,12 @@ else:
     logger.warning("frontend/ directory not found - only the API will be served.")
 
 
+# Yahan se AI search aur Chatbot ka code shuru hota hai
+logger.info("Loading AI Model for Semantic Search...")
+ai_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+
+# Ye block hamesha file ke last me hi rehna chahiye
 if __name__ == "__main__":  # pragma: no cover
     import uvicorn
-
     uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)

@@ -402,6 +402,7 @@ body {
   backdrop-filter: blur(10px);
   position: relative;
   cursor: pointer;
+  overflow: hidden;
   
   /* Netflix Smooth Scale */
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
@@ -725,4 +726,117 @@ body {
 .filters input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
   cursor: pointer;
+}
+.card-image {
+  display: block;
+  width: calc(100% + 50px); /* Halka sa bada taaki gap na bache */
+  max-width: none;
+  height: 160px;
+  object-fit: cover;
+  margin: -24px -24px 16px -24px;
+  border-bottom: 1px solid var(--border);
+}
+/* ---------- AI Chatbot (Fixed Theme) ---------- */
+
+/* Chat ka Gol Robot Button */
+.chat-toggle-btn {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: var(--teal-accent); /* Theme color use kiya */
+  color: #060911;
+  border: none;
+  font-size: 2.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--teal-glow);
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.chat-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Chat Widget Box */
+.chat-widget {
+  position: fixed !important;
+  bottom: 110px !important;
+  right: 30px !important;
+  width: 380px !important;
+  height: 500px !important;
+  background: #0b1220; /* FIX 1: Transparent hataya, Solid dark color */
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  z-index: 9999 !important;
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.chat-widget.hidden { display: none !important; }
+
+.chat-header {
+  background: #0d1526; /* Solid dark */
+  padding: 16px;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-card);
+  font-weight: bold;
+  color: var(--text-white);
+}
+.chat-header button { border: none; background: none; cursor: pointer; color: #ff4d4d; }
+
+.chat-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+.bot-msg, .user-msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 85%;
+  line-height: 1.4;
+}
+/* Bubbles ke naye colors */
+.bot-msg { background: rgba(255, 255, 255, 0.08); align-self: flex-start; color: var(--text-heading); }
+.user-msg { background: var(--teal-accent); color: #060911; font-weight: 500; align-self: flex-end; }
+
+.chat-footer {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid var(--border-card);
+  background: #0d1526;
+}
+.chat-footer input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  background: #060911;
+  color: var(--text-white);
+  font-size: 0.95rem;
+  outline: none;
+}
+.chat-footer button {
+  background: var(--teal-accent);
+  border: none;
+  color: #060911;
+  padding: 10px 16px;
+  margin-left: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
 }

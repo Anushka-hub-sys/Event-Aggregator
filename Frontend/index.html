@@ -272,9 +272,33 @@
         window.location.reload();
       }
     }
+    
 
     window.addEventListener("DOMContentLoaded", renderAuthState);
     renderAuthState();
+
+    
   </script>
+  <!-- AI Chatbot Widget -->
+<button id="chatToggleBtn" class="chat-toggle-btn" title="Ask AI">
+  🤖
+</button>
+
+<div id="chatWidget" class="chat-widget hidden">
+  <div class="chat-header">
+    <span>🤖 AI Event Assistant</span>
+    <button id="closeChatBtn" style="font-size: 1.5rem; color: #ff4d4d;">&times;</button>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="bot-msg">Hello! I am your AI Event Assistant. What kind of tech events or meetups are you looking to attend today?</div>
+  </div>
+  <div class="chat-footer">
+    <input type="text" id="chatInputMsg" placeholder="E.g., Any React meetups?" />
+    <button id="sendChatBtn">Send</button>
+  </div>
+</div>
+<!-- Main Backend Script -->
+<script src="./app.js"></script>
+  
 </body>
 </html>

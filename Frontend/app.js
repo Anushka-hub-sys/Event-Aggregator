@@ -165,9 +165,13 @@ function renderEvents(events) {
       // Check karo ki kya is event ka URL bookmarks array me hai
       const isMarked = bookmarks.includes(event.url);
       const safeUrl = encodeURIComponent(event.url);
+      const safeTitleForAI = encodeURIComponent(event.title + " tech event dark neon background");
+      const aiImageUrl = `https://image.pollinations.ai/prompt/${safeTitleForAI}?width=600&height=300&nologo=true`;
 
       return `
         <article class="card">
+          <!-- YE NAYI AI IMAGE HAI -->
+          <img src="${aiImageUrl}" alt="${escapeHtml(event.title)}" class="card-image" loading="lazy" />
           <div class="card-head">
             <h3><a href="${escapeHtml(event.url)}" target="_blank" rel="noopener noreferrer">
               ${escapeHtml(event.title)}
@@ -327,15 +331,51 @@ function closeModal() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Event wiring (debounced search)                                     */
+/* Event wiring (AI Semantic Search)                                   */
 /* ------------------------------------------------------------------ */
-let searchTimer;
-el.search.addEventListener("input", (event) => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    state.q = event.target.value.trim();
-    loadEvents();
-  }, 320);
+el.search.addEventListener("keypress", async (e) => {
+  if (e.key === "Enter") {
+    const query = e.target.value.trim();
+    
+    // Agar search bar khali hai, toh saare events wapas le aao
+    if (!query) {
+      state.q = "";
+      loadEvents();
+      return;
+    }
+
+    // AI Loading State
+    el.grid.innerHTML = `<p style="text-align:center; width:100%; color:#a855f7;">✨ AI is scanning events context... please wait.</p>`;
+    
+    try {
+      const res = await fetch(`/api/ai-search?query=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        let aiEvents = await res.json();
+        
+        // Tumhara date/bookmark filter yahan bhi kaam karega
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+        if (state.bookmarked_only) {
+          aiEvents = aiEvents.filter(e => bookmarks.includes(e.url));
+        }
+        if (state.date) {
+          const selectedTime = new Date(state.date).getTime();
+          aiEvents = aiEvents.filter(e => {
+            if (!e.starts_at) return false;
+            const start = new Date(e.starts_at.split('T')[0]).getTime();
+            const end = e.deadline ? new Date(e.deadline.split('T')[0]).getTime() : start;
+            return selectedTime >= start && selectedTime <= end;
+          });
+        }
+        
+        renderEvents(aiEvents);
+      } else {
+        throw new Error("Server returned " + res.status);
+      }
+    } catch (err) {
+      console.error("AI Search Failed", err);
+      el.grid.innerHTML = `<p class="empty" style="color:red;">AI API Error. Backend model load ho raha hai ya server band hai.</p>`;
+    }
+  }
 });
 
 el.category.addEventListener("change", (e) => { state.category = e.target.value; loadEvents(); });
@@ -359,3 +399,54 @@ el.date.addEventListener("change", (e) => { state.date = e.target.value; loadEve
 (async function init() {
   await Promise.all([loadEvents(), loadStats()]);
 })();
+
+/* ------------------------------------------------------------------ */
+/* Chatbot Logic                                                       */
+/* ------------------------------------------------------------------ */
+document.addEventListener("DOMContentLoaded", () => {
+  const chatToggleBtn = document.getElementById("chatToggleBtn");
+  const chatWidget = document.getElementById("chatWidget");
+  const closeChatBtn = document.getElementById("closeChatBtn");
+  const chatBody = document.getElementById("chatBody");
+  const chatInputMsg = document.getElementById("chatInputMsg");
+  const sendChatBtn = document.getElementById("sendChatBtn");
+
+  if(!chatToggleBtn) return; // Agar HTML load nahi hua toh error nahi aayega
+
+  chatToggleBtn.addEventListener("click", () => chatWidget.classList.toggle("hidden"));
+  closeChatBtn.addEventListener("click", () => chatWidget.classList.add("hidden"));
+
+  async function handleSendMessage() {
+    const text = chatInputMsg.value.trim();
+    if (!text) return;
+
+    chatBody.innerHTML += `<div class="user-msg">${escapeHtml(text)}</div>`;
+    chatInputMsg.value = "";
+    chatBody.scrollTop = chatBody.scrollHeight; 
+
+    const loadingId = "load-" + Date.now();
+    chatBody.innerHTML += `<div class="bot-msg" id="${loadingId}">Typing... ✨</div>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text })
+      });
+      const data = await res.json();
+      
+      document.getElementById(loadingId).remove();
+      chatBody.innerHTML += `<div class="bot-msg">${data.reply.replace(/\n/g, '<br>')}</div>`;
+    } catch (err) {
+      document.getElementById(loadingId).remove();
+      chatBody.innerHTML += `<div class="bot-msg" style="color:red;">Network Error!</div>`;
+    }
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  sendChatBtn.addEventListener("click", handleSendMessage);
+  chatInputMsg.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSendMessage();
+  });
+});
