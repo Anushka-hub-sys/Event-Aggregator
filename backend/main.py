@@ -123,7 +123,7 @@ def list_events(
     upcoming_only: bool = Query(False, description="Only events whose deadline has not passed"),
     featured_only: bool = Query(False),
     sort: Literal["recent", "deadline", "title"] = Query("recent"),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
@@ -388,36 +388,64 @@ def semantic_search(query: str, db: Session = Depends(get_db)):
 
 @app.post("/api/chat")
 def chat_bot(req: ChatRequest, db: Session = Depends(get_db)):
-    user_query = req.text
+    user_query = req.text.lower()
     
-    events = db.execute(select(models.Event).order_by(models.Event.starts_at).limit(100)).scalars().all()
-    
+    # 1. Greetings ke liye direct check
+    greetings = ["hi", "hello", "hey", "hii", "heyo"]
+    if user_query.strip() in greetings:
+        return {"reply": "Hello! I am your AI Event Assistant. What kind of tech events or meetups are you looking to attend today?"}
+
+    # 2. RAG: Pehle vector search karke sirf relevant events nikaalo
+    try:
+        # Hum semantic_search logic ko use karenge (jo line 316 par hai)
+        events_db = db.execute(select(models.Event)).scalars().all()
+        if not events_db:
+             return {"reply": "Sorry, there are no events in the database right now."}
+             
+        event_texts = [f"{e.title} {e.category} {e.description} {e.mode} {e.location}" for e in events_db]
+        query_vec = ai_model.encode([req.text])[0]
+        event_vecs = ai_model.encode(event_texts)
+        
+        relevant_events = []
+        for i, ev_vec in enumerate(event_vecs):
+            score = np.dot(query_vec, ev_vec) / (np.linalg.norm(query_vec) * np.linalg.norm(ev_vec))
+            # 0.15 ki score limit rakhi hai jo search me thi
+            if score > 0.15: 
+                relevant_events.append((score, events_db[i]))
+                
+        # Score ke hisab se sort karke top 10 relevant events nikaalo
+        relevant_events.sort(key=lambda x: x[0], reverse=True)
+        top_events = [item[1] for item in relevant_events[:10]]
+        
+    except Exception as e:
+        logger.error(f"Search error in chat: {e}")
+        top_events = []
+
+    # 3. Agar relevant event na mile toh AI call mat karo
+    if not top_events:
+        return {"reply": "Sorry, I couldn't find any events matching your request in our database right now."}
+
+    # 4. Ab context string banao SIRF relevant events se
     events_list = "\n".join([
         f"- {e.title} ({e.category}) at {e.location or 'Online'} on {e.starts_at or 'TBA'}." 
-        for e in events
+        for e in top_events
     ])
     
     prompt = f"""You are a smart, cool AI Assistant for a Tech Event platform. 
-    Here is the list of upcoming events in our database:
+    A user asked: "{req.text}"
+    
+    I have searched the database and found THESE EXACT EVENTS matching their request:
     {events_list}
     
-    User message: "{user_query}"
-    
     CRITICAL RULES:
-    1. CRITICAL RULES:
-    1. IF THE USER GREETS YOU (e.g., "hi", "hello", "hey"): Just reply with EXACTLY "Hello! I am your AI Event Assistant. What kind of tech events or meetups are you looking to attend today?" DO NOT list any events.
-    2. ONLY suggest events from the database that match what the user specifically asked for.
-    3. IF NO MATCH IS FOUND: Politely say "Sorry, I don't have any events matching that right now."
-    4. Format the events nicely with bullet points and emojis (📅, 📍). Keep it concise!
+    1. ANSWER ONLY USING THE EVENTS LISTED ABOVE. DO NOT make up, guess, or hallucinate any events, dates, or locations.
+    2. If the user asks for events in a specific city, ONLY show events from the list above that are in that city.
+    3. Format the events nicely with bullet points and emojis (📅, 📍). Keep it concise!
     """
     
     try:
-        
         all_models = [m.id for m in client.models.list().data]
-        
-        
         chat_models = [m for m in all_models if "guard" not in m.lower() and "whisper" not in m.lower()]
-        
         
         working_model = chat_models[0] 
         for m in ["llama-3.1-70b-versatile", "llama-3.2-90b-text-preview", "llama3-70b-8192", "gemma2-9b-it"]:
@@ -430,7 +458,7 @@ def chat_bot(req: ChatRequest, db: Session = Depends(get_db)):
         chat_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model=working_model, 
-            temperature=0.3
+            temperature=0.1 # Temperature 0.1 kardi taaki AI hallucinate na kare
         )
         return {"reply": chat_completion.choices[0].message.content}
         

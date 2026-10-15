@@ -109,7 +109,7 @@ async function loadEvents() {
   if (state.mode) params.set("mode", state.mode);
   if (state.upcoming) params.set("upcoming_only", "true");
   params.set("sort", state.sort);
-  params.set("limit", "60");
+  params.set("limit", "1000");
 
   try {
     const data = await apiFetch(`/events?${params.toString()}`);
@@ -464,3 +464,14 @@ document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
     this.classList.add('active');
   });
 });
+// Password Show/Hide karne ka logic
+    function togglePasswordVisibility(inputId, buttonElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        buttonElement.textContent = "🙈"; // Hide wala icon dikhayega
+      } else {
+        input.type = "password";
+        buttonElement.textContent = "👁️"; // Wapas Show wala icon dikhayega
+      }
+    }
